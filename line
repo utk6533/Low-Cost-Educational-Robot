@@ -1,0 +1,106 @@
+#define MR_1 9
+#define MR_2 8
+#define ML_1 11
+#define ML_2 10
+#define LFR_1 A0 // left sensor
+#define LFR_2 A1 // center sensor
+#define LFR_3 A2 // right sensor
+
+int R_state;
+int C_state;
+int L_state;
+unsigned int i, average, sum, reading; 
+void setup() 
+{
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(MR_1, OUTPUT);
+  pinMode(MR_2, OUTPUT);
+  pinMode(ML_1, OUTPUT);
+  pinMode(ML_2, OUTPUT);
+  pinMode(LFR_1, INPUT);
+  pinMode(LFR_2, INPUT);
+  pinMode(LFR_3, INPUT);
+}
+
+void loop() 
+{
+  // put your main code here, to run repeatedly:
+  R_state = average_val(A2, 10);
+  C_state = average_val(A1, 10);
+  L_state = average_val(A0, 10);
+  Serial.print(R_state);
+  Serial.print("----");
+  Serial.print(C_state);
+  Serial.print("----");
+  Serial.println(L_state);
+  if(R_state > 480 && C_state > 480 && L_state > 480)
+  {
+    forward();
+    Serial.println("moving forward");
+  }
+  else if(R_state < 480 && C_state > 480 && L_state > 480)
+  {
+    left_turn();
+    Serial.println("Turning left");
+  }
+  else if(R_state > 480 && C_state > 480 && L_state < 480)
+  {
+    right_turn();
+    Serial.println("Turning right");
+  }
+  else if(R_state < 480 && C_state < 480 && L_state < 480)
+  {
+    stop_move();
+    Serial.println("robot stopped");
+  }
+  
+}
+
+void forward()
+{
+  analogWrite(MR_1, 150);
+  analogWrite(MR_2, 0);
+  analogWrite(ML_1, 150);
+  analogWrite(ML_2, 0);
+}
+void reverse()
+{
+  analogWrite(MR_1, 0);
+  analogWrite(MR_2, 150);
+  analogWrite(ML_1, 0);
+  analogWrite(ML_2, 150);
+}
+void right_turn()
+{
+  analogWrite(MR_1, 0);
+  analogWrite(MR_2, 0);
+  analogWrite(ML_1, 150);
+  analogWrite(ML_2, 0);
+}
+void left_turn()
+{
+  analogWrite(MR_1, 150);
+  analogWrite(MR_2, 0);
+  analogWrite(ML_1, 0);
+  analogWrite(ML_2, 0);
+}
+void stop_move()
+{
+  analogWrite(MR_1, 0);
+  analogWrite(MR_2, 0);
+  analogWrite(ML_1, 0);
+  analogWrite(ML_2, 0);
+}
+  
+int average_val(int pin, int num)
+{
+  for(i=0;i<num;i++)
+  {
+    reading = analogRead(pin);
+    sum = sum + reading;
+  }
+  average = (sum/num);
+  sum = 0;
+  return average;
+}
